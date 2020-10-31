@@ -367,7 +367,7 @@ class InventoryCtl(object):
         group = groups[gname]
         parent = None
         if self.args.parent in groups:
-            parent = group[self.args.parent]
+            parent = groups[self.args.parent]
 
         if self.args.update:
             print('Update mode')
@@ -400,8 +400,9 @@ class InventoryCtl(object):
 
             # modify parent group
             if parent is not None:
-                sql = """UPDATE `childgroups` SET `parent_id` = %d WHERE `child_id` = %d;"""
-                affected_rows += self.__cursor.execute(sql % (group['id'], parent['id']))
+                sql = """INSERT INTO `childgroups` (`child_id`,`parent_id`) VALUES
+                              (%d,%d) ON DUPLICATE KEY UPDATE `child_id` = %d, `parent_id` = %d;"""
+                affected_rows += self.__cursor.execute(sql % (group['id'], parent['id'], group['id'], parent['id']))
 
             self.conn.commit()
 
